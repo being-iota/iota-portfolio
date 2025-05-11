@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useMemo } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { Points, PointMaterial } from '@react-three/drei';
 import * as THREE from 'three';
@@ -26,18 +26,28 @@ function generateParticles(count: number) {
 
 function ParticleField() {
   const pointsRef = useRef<THREE.Points>(null);
-  const { positions, colors } = generateParticles(1500);
+  const { positions, colors } = useMemo(() => generateParticles(800), []); // Reduced particle count
+  const lastTime = useRef(0);
+  const animationFrame = useRef<number>();
 
-  // Animate particles
+  // Optimized animation frame
   useFrame((state) => {
     if (!pointsRef.current) return;
     
-    // Rotate slowly
-    pointsRef.current.rotation.x = Math.sin(state.clock.getElapsedTime() * 0.1) * 0.1;
-    pointsRef.current.rotation.y = Math.cos(state.clock.getElapsedTime() * 0.1) * 0.1;
+    const currentTime = state.clock.getElapsedTime();
+    const deltaTime = currentTime - lastTime.current;
+    
+    // Limit animation updates to 30fps
+    if (deltaTime < 1/30) return;
+    
+    lastTime.current = currentTime;
+    
+    // Smoother rotation
+    pointsRef.current.rotation.x = Math.sin(currentTime * 0.05) * 0.05;
+    pointsRef.current.rotation.y = Math.cos(currentTime * 0.05) * 0.05;
 
-    // Pulse size
-    const scale = 1 + Math.sin(state.clock.getElapsedTime() * 0.3) * 0.1;
+    // Reduced animation intensity
+    const scale = 1 + Math.sin(currentTime * 0.2) * 0.05;
     pointsRef.current.scale.set(scale, scale, scale);
   });
 
@@ -56,6 +66,7 @@ function ParticleField() {
 
 export default function ThreeBackground() {
   const containerRef = useRef<HTMLDivElement>(null);
+  const mouseMoveTimeout = useRef<NodeJS.Timeout>();
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -63,29 +74,45 @@ export default function ThreeBackground() {
     const onMouseMove = (e: MouseEvent) => {
       if (!containerRef.current) return;
       
-      const x = (e.clientX / window.innerWidth) * 2 - 1;
-      const y = -(e.clientY / window.innerHeight) * 2 + 1;
-      
-      gsap.to(containerRef.current, {
-        duration: 2,
-        ease: 'power2.out',
-        style: {
-          transform: `perspective(1000px) rotateX(${y * 2}deg) rotateY(${x * 2}deg)`
-        }
-      });
+      // Debounce mouse movement
+      if (mouseMoveTimeout.current) {
+        clearTimeout(mouseMoveTimeout.current);
+      }
+
+      mouseMoveTimeout.current = setTimeout(() => {
+        const x = (e.clientX / window.innerWidth) * 2 - 1;
+        const y = -(e.clientY / window.innerHeight) * 2 + 1;
+        
+        gsap.to(containerRef.current, {
+          duration: 1.5,
+          ease: 'power2.out',
+          style: {
+            transform: `perspective(1000px) rotateX(${y}deg) rotateY(${x}deg)`
+          }
+        });
+      }, 16); // ~60fps
     };
 
-    window.addEventListener('mousemove', onMouseMove);
-    return () => window.removeEventListener('mousemove', onMouseMove);
+    window.addEventListener('mousemove', onMouseMove, { passive: true });
+    return () => {
+      window.removeEventListener('mousemove', onMouseMove);
+      if (mouseMoveTimeout.current) {
+        clearTimeout(mouseMoveTimeout.current);
+      }
+    };
   }, []);
 
   return (
     <div 
       ref={containerRef}
-      className="absolute inset-0 w-full h-full z-0 opacity-70"
+      className="absolute inset-0 w-full h-full z-0 opacity-50"
       style={{ transform: 'perspective(1000px)' }}
     >
-      <Canvas camera={{ position: [0, 0, 5], fov: 60 }}>
+      <Canvas 
+        camera={{ position: [0, 0, 5], fov: 60 }}
+        dpr={[1, 2]} // Limit pixel ratio for better performance
+        performance={{ min: 0.5 }} // Allow frame rate to drop if needed
+      >
         <ParticleField />
       </Canvas>
     </div>

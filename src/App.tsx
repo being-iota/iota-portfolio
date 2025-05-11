@@ -1,14 +1,23 @@
-import { useEffect } from 'react';
+import { useEffect, Suspense, lazy } from 'react';
 import ThreeBackground from './components/ThreeBackground';
 import CustomCursor from './components/CustomCursor';
 import Navbar from './components/Navbar';
-import HeroSection from './components/HeroSection';
-import ProjectsSection from './components/ProjectsSection';
-import SkillsSection from './components/SkillsSection';
-import ActivitiesSection from './components/ActivitiesSection';
-import ChatSection from './components/ChatSection';
-import ContactSection from './components/ContactSection';
-import Footer from './components/Footer';
+
+// Lazy load components
+const HeroSection = lazy(() => import('./components/HeroSection'));
+const ProjectsSection = lazy(() => import('./components/ProjectsSection'));
+const SkillsSection = lazy(() => import('./components/SkillsSection'));
+const ActivitiesSection = lazy(() => import('./components/ActivitiesSection'));
+const ChatSection = lazy(() => import('./components/ChatSection'));
+const ContactSection = lazy(() => import('./components/ContactSection'));
+const Footer = lazy(() => import('./components/Footer'));
+
+// Loading fallback component
+const LoadingFallback = () => (
+  <div className="flex items-center justify-center min-h-screen">
+    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+  </div>
+);
 
 function App() {
   // Update page title
@@ -27,20 +36,38 @@ function App() {
       {/* Navigation */}
       <Navbar />
       
-      {/* Main content */}
+      {/* Main content with lazy loading */}
       <main>
-        <HeroSection />
-        <ProjectsSection />
-        <SkillsSection />
-        <ActivitiesSection />
-        <ContactSection />
+        <Suspense fallback={<LoadingFallback />}>
+          <HeroSection />
+        </Suspense>
+        
+        <Suspense fallback={<LoadingFallback />}>
+          <ProjectsSection />
+        </Suspense>
+        
+        <Suspense fallback={<LoadingFallback />}>
+          <SkillsSection />
+        </Suspense>
+        
+        <Suspense fallback={<LoadingFallback />}>
+          <ActivitiesSection />
+        </Suspense>
+        
+        <Suspense fallback={<LoadingFallback />}>
+          <ContactSection />
+        </Suspense>
       </main>
       
       {/* AI Chat assistant */}
-      <ChatSection />
+      <Suspense fallback={null}>
+        <ChatSection />
+      </Suspense>
       
       {/* Footer */}
-      <Footer />
+      <Suspense fallback={null}>
+        <Footer />
+      </Suspense>
     </div>
   );
 }
