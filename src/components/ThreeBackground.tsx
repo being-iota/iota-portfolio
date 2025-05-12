@@ -26,9 +26,15 @@ function generateParticles(count: number) {
 
 function ParticleField() {
   const pointsRef = useRef<THREE.Points>(null);
-  const { positions, colors } = useMemo(() => generateParticles(800), []); // Reduced particle count
+  const { positions, colors } = useMemo(() => generateParticles(200), []); // Further reduced particle count
   const lastTime = useRef(0);
   const animationFrame = useRef<number>();
+  const isLowPower = useMemo(() => {
+    if (typeof navigator !== 'undefined') {
+      return navigator.hardwareConcurrency <= 4;
+    }
+    return false;
+  }, []);
 
   // Optimized animation frame
   useFrame((state) => {
@@ -37,17 +43,22 @@ function ParticleField() {
     const currentTime = state.clock.getElapsedTime();
     const deltaTime = currentTime - lastTime.current;
     
-    // Limit animation updates to 30fps
-    if (deltaTime < 1/30) return;
+    // Limit animation updates to 15fps for better performance
+    if (deltaTime < 1/15) return;
     
     lastTime.current = currentTime;
     
-    // Smoother rotation
-    pointsRef.current.rotation.x = Math.sin(currentTime * 0.05) * 0.05;
-    pointsRef.current.rotation.y = Math.cos(currentTime * 0.05) * 0.05;
+    // Minimal rotation for low-power devices
+    if (isLowPower) {
+      pointsRef.current.rotation.x = Math.sin(currentTime * 0.01) * 0.01;
+      pointsRef.current.rotation.y = Math.cos(currentTime * 0.01) * 0.01;
+    } else {
+      pointsRef.current.rotation.x = Math.sin(currentTime * 0.02) * 0.02;
+      pointsRef.current.rotation.y = Math.cos(currentTime * 0.02) * 0.02;
+    }
 
-    // Reduced animation intensity
-    const scale = 1 + Math.sin(currentTime * 0.2) * 0.05;
+    // Minimal scale animation
+    const scale = 1 + Math.sin(currentTime * 0.1) * 0.01;
     pointsRef.current.scale.set(scale, scale, scale);
   });
 
@@ -67,9 +78,16 @@ function ParticleField() {
 export default function ThreeBackground() {
   const containerRef = useRef<HTMLDivElement>(null);
   const mouseMoveTimeout = useRef<NodeJS.Timeout>();
+  const isMobile = useMemo(() => window.innerWidth <= 768, []);
+  const isLowPower = useMemo(() => {
+    if (typeof navigator !== 'undefined') {
+      return navigator.hardwareConcurrency <= 4;
+    }
+    return false;
+  }, []);
 
   useEffect(() => {
-    if (!containerRef.current) return;
+    if (!containerRef.current || isMobile || isLowPower) return;
 
     const onMouseMove = (e: MouseEvent) => {
       if (!containerRef.current) return;
@@ -84,13 +102,13 @@ export default function ThreeBackground() {
         const y = -(e.clientY / window.innerHeight) * 2 + 1;
         
         gsap.to(containerRef.current, {
-          duration: 1.5,
+          duration: 0.8,
           ease: 'power2.out',
           style: {
-            transform: `perspective(1000px) rotateX(${y}deg) rotateY(${x}deg)`
+            transform: `perspective(1000px) rotateX(${y * 0.3}deg) rotateY(${x * 0.3}deg)`
           }
         });
-      }, 16); // ~60fps
+      }, 50); // Reduced to 20fps
     };
 
     window.addEventListener('mousemove', onMouseMove, { passive: true });
@@ -100,18 +118,30 @@ export default function ThreeBackground() {
         clearTimeout(mouseMoveTimeout.current);
       }
     };
-  }, []);
+  }, [isMobile, isLowPower]);
+
+  // Don't render on mobile or low-power devices
+  if (isMobile || isLowPower) {
+    return null;
+  }
 
   return (
     <div 
       ref={containerRef}
-      className="absolute inset-0 w-full h-full z-0 opacity-50"
+      className="absolute inset-0 w-full h-full z-0 opacity-20"
       style={{ transform: 'perspective(1000px)' }}
     >
       <Canvas 
         camera={{ position: [0, 0, 5], fov: 60 }}
-        dpr={[1, 2]} // Limit pixel ratio for better performance
-        performance={{ min: 0.5 }} // Allow frame rate to drop if needed
+        dpr={[1, 1.2]} // Further reduced pixel ratio
+        performance={{ min: 0.5 }}
+        gl={{ 
+          antialias: false,
+          alpha: true,
+          powerPreference: 'high-performance',
+          stencil: false,
+          depth: false
+        }}
       >
         <ParticleField />
       </Canvas>

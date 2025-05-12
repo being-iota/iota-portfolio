@@ -1,9 +1,9 @@
-import { useEffect, Suspense, lazy } from 'react';
+import { useEffect, Suspense, lazy, useState, useCallback } from 'react';
 import ThreeBackground from './components/ThreeBackground';
 import CustomCursor from './components/CustomCursor';
 import Navbar from './components/Navbar';
 
-// Lazy load components
+// Lazy load components with prefetch
 const HeroSection = lazy(() => import('./components/HeroSection'));
 const ProjectsSection = lazy(() => import('./components/ProjectsSection'));
 const SkillsSection = lazy(() => import('./components/SkillsSection'));
@@ -20,15 +20,53 @@ const LoadingFallback = () => (
 );
 
 function App() {
-  // Update page title
+  const [isLoading, setIsLoading] = useState(true);
+  const [isLowPower, setIsLowPower] = useState(false);
+
+  // Check device capabilities
+  useEffect(() => {
+    if (typeof navigator !== 'undefined') {
+      setIsLowPower(navigator.hardwareConcurrency <= 4);
+    }
+  }, []);
+
+  // Preload critical components
+  const preloadComponents = useCallback(async () => {
+    try {
+      const [HeroModule, NavbarModule] = await Promise.all([
+        import('./components/HeroSection'),
+        import('./components/Navbar')
+      ]);
+      
+      // Preload other components in the background
+      if (!isLowPower) {
+        Promise.all([
+          import('./components/ProjectsSection'),
+          import('./components/SkillsSection')
+        ]).catch(console.error);
+      }
+      
+      setIsLoading(false);
+    } catch (error) {
+      console.error('Error preloading components:', error);
+      setIsLoading(false);
+    }
+  }, [isLowPower]);
+
+  // Update page title and preload components
   useEffect(() => {
     document.title = "Ratnapriya | Tech Explorer";
-  }, []);
+    preloadComponents();
+  }, [preloadComponents]);
+
+  if (isLoading) {
+    return <LoadingFallback />;
+  }
 
   return (
     <div className="relative">
       {/* Custom cursor for desktop */}
-      <CustomCursor />
+      {!isLowPower && <CustomCursor />}
       
       {/* 3D background with particles */}
       <ThreeBackground />
@@ -42,27 +80,29 @@ function App() {
           <HeroSection />
         </Suspense>
         
-        <Suspense fallback={<LoadingFallback />}>
+        <Suspense fallback={null}>
           <ProjectsSection />
         </Suspense>
         
-        <Suspense fallback={<LoadingFallback />}>
+        <Suspense fallback={null}>
           <SkillsSection />
         </Suspense>
         
-        <Suspense fallback={<LoadingFallback />}>
+        <Suspense fallback={null}>
           <ActivitiesSection />
         </Suspense>
         
-        <Suspense fallback={<LoadingFallback />}>
+        <Suspense fallback={null}>
           <ContactSection />
         </Suspense>
       </main>
       
-      {/* AI Chat assistant */}
-      <Suspense fallback={null}>
-        <ChatSection />
-      </Suspense>
+      {/* AI Chat assistant - Load only when needed */}
+      {!isLowPower && (
+        <Suspense fallback={null}>
+          <ChatSection />
+        </Suspense>
+      )}
       
       {/* Footer */}
       <Suspense fallback={null}>
