@@ -40,7 +40,7 @@ export default function ActivitiesSection() {
   };
 
   return (
-    <section id="activities" className="py-20 bg-dark-300 relative z-10">
+    <section id="activities" className="py-20 relative z-10 bg-gradient-to-br from-blue-900 via-blue-800 to-blue-700 dark:from-dark-400 dark:via-dark-300 dark:to-dark-400 transition-colors duration-500">
       <div className="container mx-auto px-4 md:px-6">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -49,8 +49,8 @@ export default function ActivitiesSection() {
           viewport={{ once: true }}
           className="text-center mb-16"
         >
-          <h2 className="text-3xl md:text-4xl font-bold mb-4 gradient-text">Co-curricular Activities</h2>
-          <p className="text-light-300/80 max-w-2xl mx-auto">
+          <h2 className="text-4xl md:text-5xl font-extrabold mb-4 gradient-text">Co-curricular Activities</h2>
+          <p className="text-lg md:text-xl text-light-300/90 max-w-2xl mx-auto">
             Beyond academics, I've been actively involved in various technical communities, leadership roles, and creative initiatives.
           </p>
         </motion.div>
@@ -61,7 +61,7 @@ export default function ActivitiesSection() {
             whileHover={{ scale: 1.15, boxShadow: '0 0 16px #6366f1' }}
             whileTap={{ scale: 0.95 }}
             onClick={goToPrevious}
-            className="absolute -left-2 xs:-left-4 md:-left-12 top-1/2 transform -translate-y-1/2 z-20 p-2 rounded-full bg-dark-200/80 text-light-100 hover:bg-primary-500/80 transition-colors shadow-lg"
+            className="absolute -left-2 xs:-left-4 md:-left-12 top-1/2 transform -translate-y-1/2 z-20 p-3 rounded-full bg-white/80 dark:bg-dark-200/80 text-blue-700 dark:text-light-100 hover:bg-blue-200 dark:hover:bg-primary-500/80 transition-colors shadow-lg"
             onMouseEnter={() => handleMouseEnter('Previous')}
             onMouseLeave={handleMouseLeave}
             aria-label="Previous Activity"
@@ -74,7 +74,7 @@ export default function ActivitiesSection() {
             whileHover={{ scale: 1.15, boxShadow: '0 0 16px #6366f1' }}
             whileTap={{ scale: 0.95 }}
             onClick={goToNext}
-            className="absolute -right-2 xs:-right-4 md:-right-12 top-1/2 transform -translate-y-1/2 z-20 p-2 rounded-full bg-dark-200/80 text-light-100 hover:bg-primary-500/80 transition-colors shadow-lg"
+            className="absolute -right-2 xs:-right-4 md:-right-12 top-1/2 transform -translate-y-1/2 z-20 p-3 rounded-full bg-white/80 dark:bg-dark-200/80 text-blue-700 dark:text-light-100 hover:bg-blue-200 dark:hover:bg-primary-500/80 transition-colors shadow-lg"
             onMouseEnter={() => handleMouseEnter('Next')}
             onMouseLeave={handleMouseLeave}
             aria-label="Next Activity"
@@ -84,7 +84,7 @@ export default function ActivitiesSection() {
           </motion.button>
 
           {/* Carousel */}
-          <div className="overflow-hidden rounded-xl">
+          <div className="overflow-hidden rounded-2xl shadow-2xl">
             <div
               ref={carouselRef}
               className="relative min-h-[420px] xs:min-h-[480px] sm:min-h-[520px] md:min-h-[450px]"
@@ -105,24 +105,24 @@ export default function ActivitiesSection() {
                     >
                       <motion.div
                         whileHover={{ scale: 1.02, boxShadow: '0 8px 32px 0 rgba(99,102,241,0.15)' }}
-                        className="flex flex-col sm:flex-row h-full w-full glassmorphism rounded-xl overflow-hidden shadow-2xl transition-all duration-500"
+                        className="flex flex-col sm:flex-row h-full w-full rounded-2xl overflow-hidden shadow-2xl bg-white/80 dark:bg-dark-400/80 backdrop-blur-md border border-blue-200 dark:border-primary-500/20 transition-all duration-500"
                       >
-                        <div className="w-full sm:w-1/2 h-40 xs:h-56 sm:h-full relative">
+                        <div className="w-full sm:w-1/2 h-48 xs:h-64 sm:h-full relative">
                           <img
                             src={activity.image}
                             alt={activity.title}
                             className="w-full h-full object-cover"
                           />
-                          <div className="absolute inset-0 bg-gradient-to-t from-dark-500 via-dark-500/50 to-transparent sm:bg-gradient-to-r sm:from-transparent sm:via-dark-500/50 sm:to-dark-500"></div>
+                          <div className="absolute inset-0 bg-gradient-to-t from-blue-900/60 via-blue-800/30 to-transparent sm:bg-gradient-to-r sm:from-transparent sm:via-blue-900/30 sm:to-blue-900/60 dark:from-dark-500 dark:via-dark-500/50 dark:to-transparent"></div>
                         </div>
-                        <div className="w-full sm:w-1/2 p-4 xs:p-6 sm:p-8 flex flex-col justify-center">
-                          <div className="mb-1 xs:mb-2 text-xs xs:text-sm font-medium text-primary-400 animate-fadeInUp">
+                        <div className="w-full sm:w-1/2 p-6 sm:p-10 flex flex-col justify-center">
+                          <div className="mb-2 text-base font-semibold text-blue-500 dark:text-primary-400 animate-fadeInUp">
                             {activity.role}
                           </div>
-                          <h3 className="text-lg xs:text-xl sm:text-2xl font-bold text-light-100 mb-2 xs:mb-4 animate-fadeInUp">
+                          <h3 className="text-2xl sm:text-3xl font-bold text-blue-900 dark:text-light-100 mb-3 animate-fadeInUp">
                             {activity.title}
                           </h3>
-                          <p className="text-light-300/80 mb-4 xs:mb-6 text-xs xs:text-sm sm:text-base animate-fadeInUp">
+                          <p className="text-lg sm:text-xl text-blue-800 dark:text-light-300/80 mb-4 animate-fadeInUp">
                             {activity.description}
                           </p>
                         </div>
@@ -140,7 +140,7 @@ export default function ActivitiesSection() {
               <motion.button
                 key={index}
                 className={`w-3 h-3 xs:w-4 xs:h-4 rounded-full transition-colors focus:outline-none ${
-                  index === currentIndex ? 'bg-primary-500 shadow-lg scale-125' : 'bg-dark-200'
+                  index === currentIndex ? 'bg-blue-500 shadow-lg scale-125' : 'bg-blue-200 dark:bg-dark-200'
                 }`}
                 onMouseEnter={() => handleMouseEnter(`Activity ${index + 1}`)}
                 onMouseLeave={handleMouseLeave}
